@@ -15,7 +15,7 @@
 #define LED_PIN 4   // WS2812 LED strip pin
 #define NUM_LEDS 16 // Number of LEDs in the strip
 
-// PIR sensor initial cong=fig
+// PIR sensor initial congfig
 int ledPinPIR = 25;    // choose the pin for the LED
 int inputPinPIR = 14;  // choose the input pin (for PIR sensor)
 int pirStatePIR = LOW; // we start, assuming no motion detected
@@ -50,7 +50,7 @@ const char *topic = "Tempdata";                      // Publish topic
 
 // Parameters for using non-blocking delay
 unsigned long previousMillis = 0;
-const long interval = 1000;
+const long interval = 10000;
 String msgStr = ""; // MQTT message buffer
 float temp, hum;
 
@@ -152,9 +152,9 @@ void callback(char *topic, byte *payload, unsigned int length)
 
 void handlePIRSensor()
 {
-  valPIR = digitalRead(inputPinPIR); // read input value
+  const int valPIR = digitalRead(inputPinPIR); // read input value
 
-  if (valPIR == HIGH)
+  if (valPIR == 1)
   {                                // check if the input is HIGH
     digitalWrite(ledPinPIR, HIGH); // turn LED ON
     if (pirStatePIR == LOW)
@@ -206,6 +206,25 @@ void displayPotValue(int potValue)
   display.display();
 }
 
+// Simulated NPK values
+int nitrogen = 0;
+int phosphorus = 0;
+int potassium = 0;
+
+// Fonction pour simuler des lectures NPK (par ex. entre 10 et 60)
+void readNPKSensor()
+{
+  nitrogen = random(10, 60);   // Simule la lecture de l'azote
+  phosphorus = random(10, 60); // Simule la lecture du phosphore
+  potassium = random(10, 60);  // Simule la lecture du potassium
+
+  Serial.print("NPK -> N: ");
+  Serial.print(nitrogen);
+  Serial.print(" | P: ");
+  Serial.print(phosphorus);
+  Serial.print(" | K: ");
+  Serial.println(potassium);
+}
 void setup()
 {
   Serial.begin(115200);
@@ -277,7 +296,9 @@ void loop()
       Serial.print(hum);
       Serial.println(F("%"));
     }
-    msgStr = String(temp) + "," + String(hum) + ",";
+    // read the three values of
+    readNPKSensor(); // Read the simulated NPK values
+    msgStr = String(temp) + "," + String(hum) + "," + String(nitrogen) + "," + String(phosphorus) + "," + String(potassium);
     byte arrSize = msgStr.length() + 1;
     char msg[arrSize];
     Serial.print("PUBLISH DATA: ");
