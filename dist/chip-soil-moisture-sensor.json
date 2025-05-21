@@ -1,0 +1,22 @@
+{
+  "name": "Soil Moisture Sensor",
+  "author": "CU Anonymous",
+  "pins": [
+    "",
+    "",
+    "",
+    "SIG",
+    "GND",
+    "VCC"
+  ],
+  "controls": [
+    {
+      "id": "moisture",
+      "label": "Soil Moisture",
+      "type": "range",
+      "min": 0,
+      "max": 1023,
+      "step": 1
+    }
+  ]
+}

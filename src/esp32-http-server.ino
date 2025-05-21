@@ -15,6 +15,9 @@
 #define LED_PIN 4   // WS2812 LED strip pin
 #define NUM_LEDS 16 // Number of LEDs in the strip
 
+// photoresistor for day night and soil moisture
+const int photoresistorPin = 32;
+
 // PIR sensor initial congfig
 int ledPinPIR = 25;    // choose the pin for the LED
 int inputPinPIR = 14;  // choose the input pin (for PIR sensor)
@@ -57,6 +60,12 @@ float temp, hum;
 // Setting up WiFi and MQTT client
 WiFiClient espClient;
 PubSubClient client(espClient);
+
+// Simulated NPK values
+int nitrogen = 24;
+int phosphorus = 23;
+int potassium = 24;
+int ph = 6.1;
 
 void setup_wifi()
 {
@@ -150,6 +159,21 @@ void callback(char *topic, byte *payload, unsigned int length)
   }
 }
 
+// Fonction pour simuler des lectures NPK (par ex. entre 10 et 60)
+void readNPKSensor()
+{
+  nitrogen = random(10, 60);   // Simule la lecture de l'azote
+  phosphorus = random(10, 60); // Simule la lecture du phosphore
+  potassium = random(10, 60);  // Simule la lecture du potassium
+
+  Serial.print("NPK -> N: ");
+  Serial.print(nitrogen);
+  Serial.print(" | P: ");
+  Serial.print(phosphorus);
+  Serial.print(" | K: ");
+  Serial.println(potassium);
+}
+
 void handlePIRSensor()
 {
   const int valPIR = digitalRead(inputPinPIR); // read input value
@@ -206,25 +230,6 @@ void displayPotValue(int potValue)
   display.display();
 }
 
-// Simulated NPK values
-int nitrogen = 0;
-int phosphorus = 0;
-int potassium = 0;
-
-// Fonction pour simuler des lectures NPK (par ex. entre 10 et 60)
-void readNPKSensor()
-{
-  nitrogen = random(10, 60);   // Simule la lecture de l'azote
-  phosphorus = random(10, 60); // Simule la lecture du phosphore
-  potassium = random(10, 60);  // Simule la lecture du potassium
-
-  Serial.print("NPK -> N: ");
-  Serial.print(nitrogen);
-  Serial.print(" | P: ");
-  Serial.print(phosphorus);
-  Serial.print(" | K: ");
-  Serial.println(potassium);
-}
 void setup()
 {
   Serial.begin(115200);
@@ -297,19 +302,66 @@ void loop()
       Serial.println(F("%"));
     }
     // read the three values of
-    readNPKSensor(); // Read the simulated NPK values
-    msgStr = String(temp) + "," + String(hum) + "," + String(nitrogen) + "," + String(phosphorus) + "," + String(potassium);
+    // readNPKSensor(); // Read the simulated NPK values
+    // -------------------------------------------- SMART IRRITATION
+    //  1) Compute light percentage & demand
+    int rawLDR = analogRead(photoresistorPin);
+    float lightPct = map(rawLDR, 0, 4095, 0, 100);
+    float demand = (lightPct * (100.0 - hum)) / 100.0;
+    demand = constrain(demand, 0, 100);
+    // 2) Map to servo angle
+    int angle = map((int)demand, 0, 100, 0, 180); // 0–180°
+    servo.write(angle);
+
+    // 4) Print for debugging
+    Serial.println("====================================");
+    Serial.print("LDR Raw:\t\t");
+    Serial.println(rawLDR);
+    Serial.print("Light %:\t\t");
+    Serial.print(lightPct, 1);
+    Serial.println(" %");
+    Serial.print("Water Demand:\t\t");
+    Serial.print(demand, 1);
+    Serial.println(" %");
+    Serial.print("Valve Angle:\t\t");
+    Serial.print(angle);
+    Serial.println(" °");
+    Serial.println("====================================\n");
+
+    // -------------------------------------------- PUBLISH DATA
+
+    // Compose the full message string including all variables
+    msgStr =
+        String(temp) + "," +
+        String(hum) + "," +
+        String(nitrogen) + "," +
+        String(phosphorus) + "," +
+        String(potassium) + "," +
+        String(ph) + "," +
+        String(angle) + "," +
+        String(rawLDR) + "," +
+        String(lightPct, 1) + "," +
+        String(demand, 1);
+
+    // Optional: Label the data for easier parsing
+    // msgStr = "T:" + String(temp) + ",H:" + String(hum) + ... etc.
+
+    // Print and publish the message
     byte arrSize = msgStr.length() + 1;
     char msg[arrSize];
     Serial.print("PUBLISH DATA: ");
     Serial.println(msgStr);
     msgStr.toCharArray(msg, arrSize);
     client.publish(topic, msg);
+
     msgStr = "";
     delay(1);
   }
 
-  int value = analogRead(potPin);
-  displayPotValue(value);
+  /* int potValue = analogRead(potPin);
+  displayPotValue(potValue); // Optional, assume it shows on a display
+
+  Serial.print("Potentiometer Value: ");
+  Serial.print(potValue); */
   delay(500); // Only update twice per second
 }

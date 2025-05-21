@@ -7,3 +7,7 @@ firmware = ".pio/build/esp32/firmware.bin"
 [[net.forward]]
 from = "localhost:8180"
 to = "target:80"
+
+[[chip]]
+name = 'chip-soil-moisture-sensor'
+binary = 'dist/chip-soil-moisture-sensor.wasm'
