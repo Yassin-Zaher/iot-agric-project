@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "author": "Asim Zulfiqar",
+  "author": "Zaher Yassin",
   "editor": "wokwi",
   "parts": [
-    { "type": "wokwi-esp32-devkit-v1", "id": "esp", "top": 4.7, "left": 4.6, "attrs": {} },
+    { "type": "wokwi-esp32-devkit-v1", "id": "esp", "top": 4.7, "left": -5, "attrs": {} },
     {
       "type": "wokwi-dht22",
       "id": "dht1",
@@ -26,7 +26,7 @@
       "rotate": 90,
       "attrs": { "value": "1000" }
     },
-    { "type": "wokwi-servo", "id": "servo1", "top": -146, "left": 259.2, "attrs": {} },
+    { "type": "wokwi-servo", "id": "servo1", "top": 391.6, "left": 0, "attrs": {} },
     { "type": "wokwi-pir-motion-sensor", "id": "pir1", "top": 71.2, "left": 357.42, "attrs": {} },
     { "type": "wokwi-led", "id": "led2", "top": 198, "left": 416.6, "attrs": { "color": "red" } },
     {
@@ -40,8 +40,8 @@
     {
       "type": "board-ssd1306",
       "id": "oled1",
-      "top": 291.14,
-      "left": 38.63,
+      "top": 406.34,
+      "left": -191.77,
       "attrs": { "i2cAddress": "0x3c" }
     },
     { "type": "wokwi-potentiometer", "id": "pot1", "top": 305.9, "left": 297.4, "attrs": {} },
@@ -51,15 +51,25 @@
       "top": 310.4,
       "left": -306.4,
       "attrs": {}
-
     },
     {
-      "type": "chip-soil-moisture-sensor",
-      "id": "chip1",
-      "top": 221.82,
-      "left": -358.19,
+      "type": "chip-chip-soil-moisture-sensor",
+      "id": "chip2",
+      "top": -142.98,
+      "left": -340.8,
       "attrs": {}
-    }
+    },
+    { "type": "wokwi-relay-module", "id": "relay1", "top": -105.4, "left": 307.2, "attrs": {} },
+    { "type": "wokwi-hc-sr04", "id": "ultrasonic1", "top": -267.3, "left": 53.5, "attrs": {} },
+    {
+      "type": "wokwi-led",
+      "id": "led3",
+      "top": -176.4,
+      "left": 493.4,
+      "attrs": { "color": "yellow" }
+    },
+    { "type": "wokwi-vcc", "id": "vcc1", "top": -152.84, "left": 556.8, "attrs": {} },
+    { "type": "wokwi-gnd", "id": "gnd1", "top": -38.4, "left": 469.8, "attrs": {} }
   ],
   "connections": [
     [ "esp:TX0", "$serialMonitor:RX", "", [] ],
@@ -95,7 +105,19 @@
     [ "ldr1:VCC", "esp:3V3", "magenta", [ "h172.8", "v-76.8", "h96", "v-86.4" ] ],
     [ "chip1:GND", "esp:GND.2", "black", [ "h9.6", "v-86.4", "h249.6" ] ],
     [ "chip1:SIG", "esp:D34", "green", [ "h115.2", "v-191.8" ] ],
-    [ "chip1:VCC", "esp:3V3", "yellow", [ "h355.2", "v-67.2" ] ]
+    [ "chip1:VCC", "esp:3V3", "yellow", [ "h355.2", "v-67.2" ] ],
+    [ "relay1:GND", "esp:GND.1", "limegreen", [ "h-67.2", "v143.7" ] ],
+    [ "relay1:VCC", "esp:3V3", "red", [ "h-28.8", "v163.2" ] ],
+    [ "ultrasonic1:VCC", "esp:VIN", "red", [ "v336", "h-307.2" ] ],
+    [ "ultrasonic1:GND", "esp:GND.1", "black", [ "v326.4", "h-241.2" ] ],
+    [ "ultrasonic1:TRIG", "esp:D18", "green", [ "v201.6", "h-182.8" ] ],
+    [ "relay1:IN", "esp:D5", "green", [ "v163", "h-210.9" ] ],
+    [ "led3:A", "vcc1:VCC", "green", [ "v48", "h48" ] ],
+    [ "led3:C", "relay1:COM", "green", [ "v57.6", "h-86" ] ],
+    [ "relay1:NO", "gnd1:GND", "green", [ "h58.8", "v27" ] ],
+    [ "chip2:VCC", "esp:3V3", "red", [ "h288", "v259.2" ] ],
+    [ "chip2:GND", "esp:GND.1", "black", [ "h192", "v163.2" ] ],
+    [ "chip2:SIG", "esp:D34", "green", [ "h57.6", "v134.6" ] ]
   ],
   "dependencies": {}
 }

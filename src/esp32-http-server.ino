@@ -14,6 +14,12 @@
 #define SERVO_PIN 2 // Servo motor pin
 #define LED_PIN 4   // WS2812 LED strip pin
 #define NUM_LEDS 16 // Number of LEDs in the strip
+#define RELAY_IN_PIN 5
+const int SOIL_MOISTURE_PIN = 34;
+const int SPRINKLER_CONTROL_PIN = 19;
+int MOISTURE_THRESHOLD_LOW = 15;  // Set Activation threshold in percentage
+int MOISTURE_THRESHOLD_HIGH = 85; // Set Deactivation threshold in percentage
+bool SPRINKLER_ACTIVATION_STATUS = false;
 
 // photoresistor for day night and soil moisture
 const int photoresistorPin = 32;
@@ -93,6 +99,7 @@ void reconnect()
       client.subscribe("servo");           // Subscribe to servo topic
       client.subscribe("lights/neopixel"); // Subscribe to neopixel topic
       Serial.println("Topic Subscribed");
+      client.subscribe("myhome/led");
     }
     else
     {
@@ -156,6 +163,20 @@ void callback(char *topic, byte *payload, unsigned int length)
     FastLED.show();                                     // Update the LED strip with the new color
     fill_solid(leds, NUM_LEDS, CRGB(red, green, blue));
     FastLED.show();
+  }
+  else if (String(topic) == "myhome/led")
+  {
+    Serial.print("Flask attemp led");
+    if (data == "ON")
+    {
+      digitalWrite(LED, HIGH);
+      Serial.println("myhome/led → LED ON");
+    }
+    else if (data == "OFF")
+    {
+      digitalWrite(LED, LOW);
+      Serial.println("myhome/led → LED OFF");
+    }
   }
 }
 
@@ -256,6 +277,10 @@ void setup()
   // PIR SENSOR INITIAL SETUP
   pinMode(ledPinPIR, OUTPUT);  // declare LED as output
   pinMode(inputPinPIR, INPUT); // declare sensor as input
+
+  // RELAY AND Ultrasonic Distance Sensor
+
+  pinMode(RELAY_IN_PIN, OUTPUT);
 
   // Initialize potentiometer
   initOLED();
@@ -358,10 +383,12 @@ void loop()
     delay(1);
   }
 
-  /* int potValue = analogRead(potPin);
-  displayPotValue(potValue); // Optional, assume it shows on a display
+  /*  int soilMoisturePercentage = map(analogRead(SOIL_MOISTURE_PIN), 0, 4095, 0, 100);
+   Serial.print("Soil Moisture Percentage: ");
+   Serial.print(soilMoisturePercentage);
+   Serial.println("%"); */
 
-  Serial.print("Potentiometer Value: ");
-  Serial.print(potValue); */
+  digitalWrite(RELAY_IN_PIN, HIGH);
   delay(500); // Only update twice per second
+  digitalWrite(RELAY_IN_PIN, LOW);
 }
